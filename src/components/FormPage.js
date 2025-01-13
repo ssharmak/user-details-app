@@ -1,16 +1,19 @@
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import "./FormPage.css"; // Make sure to import the CSS file
 
 function FormPage() {
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
     phone: "",
     email: "",
     dob: "",
     address: "",
   });
   const [error, setError] = useState("");
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,39 +26,79 @@ function FormPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validation checks
-    const { name, phone, email, dob, address } = formData;
-    if (!name || !phone || !email || !dob || !address) {
+    const { firstName, middleName, lastName, phone, email, dob, address } =
+      formData;
+
+    // Check if any required field is missing
+    if (
+      !firstName ||
+      !middleName ||
+      !lastName ||
+      !phone ||
+      !email ||
+      !dob ||
+      !address
+    ) {
       setError("All fields are required.");
       return;
     }
+
+    // Validate name fields (no numbers, max 15 characters)
+    if (
+      !/^[a-zA-Z\s]+$/.test(firstName) ||
+      !/^[a-zA-Z\s]+$/.test(middleName) ||
+      !/^[a-zA-Z\s]+$/.test(lastName) ||
+      firstName.length > 15 ||
+      middleName.length > 15 ||
+      lastName.length > 15
+    ) {
+      setError(
+        "Names should contain only letters and spaces, and be at most 15 characters."
+      );
+      return;
+    }
+
+    // Validate phone number (should be 10 digits)
     if (!/^\d{10}$/.test(phone)) {
       setError("Phone number must be 10 digits.");
       return;
     }
-    if (!/^[a-zA-Z\s]+$/.test(name) || name.length > 15) {
-      setError("Name should contain only text and be at most 15 characters.");
+
+    // Validate email format (restricts any characters after .com)
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com)$/i.test(email)) {
+      setError("Please enter a valid email address with .com domain only.");
       return;
     }
-    setError("");
 
-    // Redirect to the display page with data
-    history.push({
-      pathname: "/form-display",
-      state: { formData },
-    });
+    // Reset error message if all validations pass
+    setError("");
+    navigate("/form-display", { state: { formData } }); // Navigate to FormDisplayPage
   };
 
   return (
-    <div>
+    <div className="form-container">
       <h1>Fill out the form</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          name="name"
-          placeholder="Name"
-          value={formData.name}
+          name="firstName"
+          placeholder="First Name"
+          value={formData.firstName}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="middleName"
+          placeholder="Middle Name"
+          value={formData.middleName}
+          onChange={handleChange}
+        />
+        <input
+          type="text"
+          name="lastName"
+          placeholder="Last Name"
+          value={formData.lastName}
           onChange={handleChange}
         />
         <input
